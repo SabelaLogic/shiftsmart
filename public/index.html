@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en-ZA">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ShiftSmart — find your dead hours</title>
+<meta name="description" content="Log your driving shifts and see which hours and areas actually pay. Works offline. Your data stays on your phone.">
+<meta name="theme-color" content="#0B0F14">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="app">
+  <header class="top">
+    <div class="brand"><span class="logo" aria-hidden="true"><svg viewBox="0 0 100 100"><path d="M56 18 30 56h17l-5 26 28-39H52z"/></svg></span><span class="wordmark">ShiftSmart</span></div>
+    <span class="pill" id="datapill">Private · offline</span>
+  </header>
+  <div id="banner"></div>
+  <main id="view"></main>
+  <nav class="tabbar" id="tabbar" aria-label="Sections">
+    <button data-tab="today" aria-label="Today"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg><span>Today</span></button>
+    <button data-tab="heat" aria-label="Heatmap"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></svg><span>Heatmap</span></button>
+    <button data-tab="plan" aria-label="Plan"><svg viewBox="0 0 24 24"><path d="M4 18 9.5 12l3.5 3.5L20 7"/><path d="M15 7h5v5"/></svg><span>Plan</span></button>
+    <button data-tab="data" aria-label="Data"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="7.5" ry="3"/><path d="M4.5 6v12c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3V6"/><path d="M4.5 12c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3"/></svg><span>Data</span></button>
+  </nav>
+</div>
+<dialog id="sheet"><div id="sheetbody"></div></dialog>
+<div id="toast" role="status" aria-live="polite"></div>
+<noscript><p style="padding:24px;color:#fff">ShiftSmart needs JavaScript to run.</p></noscript>
+<script src="app.js" defer></script>
+</body>
+</html>
