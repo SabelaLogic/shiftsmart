@@ -1,5 +1,6 @@
-/* ShiftSmart — runs entirely in the browser. No accounts, no servers, no network calls.
-   Everything lives in localStorage on the device. */
+/* ShiftSmart — your shifts live in localStorage on the device and are never uploaded.
+   The only network call is /api/verify, which sends the email you subscribed with
+   so the server can ask Paystack whether the subscription is active. */
 (() => {
 'use strict';
 
@@ -27,7 +28,19 @@ function load() {
   } catch (e) { /* storage blocked: fall through */ }
   return memStore || { entries: [], running: null };
 }
-const state = { tab: 'today', data: load(), sample: false, sampleEntries: null, media: [], kind: 'auto', area: '', sel: null, storageOk: true };
+/* ---------- pro (Paystack subscription) ---------- */
+const PRO_KEY = 'shiftsmart.pro', PRO_RECHECK = 864e5, PRO_GRACE = 14 * 864e5;
+let proMem = null;
+function loadPro() { try { const r = localStorage.getItem(PRO_KEY); if (r) return JSON.parse(r); } catch (e) { /* blocked */ } return proMem; }
+function savePro(p) { proMem = p; try { p ? localStorage.setItem(PRO_KEY, JSON.stringify(p)) : localStorage.removeItem(PRO_KEY); } catch (e) { /* blocked */ } }
+const isPro = () => { const p = state.pro; return !!(p && p.email && Date.now() - p.at < PRO_GRACE); };
+async function checkPro(email) {
+  const r = await fetch('/api/verify', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ email }) });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(j.error === 'bad_email' ? 'bad_email' : 'unavailable');
+  return !!j.active;
+}
+const state = { tab: 'today', data: load(), sample: false, sampleEntries: null, media: [], kind: 'auto', area: '', sel: null, storageOk: true, pro: loadPro(), proBusy: false };
 function save() {
   memStore = state.data;
   try { localStorage.setItem(KEY, JSON.stringify(state.data)); state.storageOk = true; }
@@ -216,7 +229,7 @@ function viewToday() {
       <div class="step"><b>1</b><div><h3>Tap start when you go online</h3><p>Tap stop when you finish and type what you earned. That includes the waiting time, which is where dead hours hide.</p></div></div>
       <div class="step"><b>2</b><div><h3>Do it for a week or two</h3><p>Each shift is spread across the hours you worked, so the heatmap fills in as you go.</p></div></div>
       <div class="step"><b>3</b><div><h3>See what to change</h3><p>The Plan tab shows your best and worst slots and what moving hours could add.</p></div></div></div></section>
-      ${payCard()}
+      ${isPro() ? '' : payCard()}
       ${privacyCard()}`;
   }
   const t = weekSum(es, 0), p = weekSum(es, -1);
@@ -239,6 +252,24 @@ function payCard() {
   <p style="font-size:14px">Subscribe to keep ShiftSmart growing. Payment opens on Paystack in a new tab, so your card details never touch this app.</p>
   <a class="btn gold block" href="${PAY_URL}" target="_blank" rel="noopener noreferrer">Subscribe on Paystack</a></section>`;
 }
+function lockCard(what) {
+  return `<section class="card stack"><div class="kicker">ShiftSmart Pro</div><h2>${what} is for subscribers</h2>
+  <p>Logging shifts, the timer, imports and backups stay free. Subscribe for R49 a month to see your ${what === 'Heatmap' ? 'hour-by-hour heatmap and area breakdown' : 'best and worst slots and what moving hours could earn you'}.</p>
+  <a class="btn gold block" href="${PAY_URL}" target="_blank" rel="noopener noreferrer">Subscribe on Paystack</a>
+  <button class="btn block" data-act="sample">See it with sample data</button></section>${unlockCard()}`;
+}
+function unlockCard() {
+  return `<section class="card stack"><h3>Already subscribed?</h3>
+  <p style="font-size:14px">Enter the email you used on Paystack. Only that email is sent to our server, to check your subscription.</p>
+  <input id="proemail" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com" value="${esc((state.pro && state.pro.email) || '')}">
+  <p class="hint" id="proerr" role="alert"></p>
+  <button class="btn gold block" data-act="unlock"${state.proBusy ? ' disabled' : ''}>${state.proBusy ? 'Checking…' : 'Unlock'}</button></section>`;
+}
+function proCard() {
+  return `<section class="card stack"><div class="kicker">ShiftSmart Pro</div><h3>Subscription active</h3>
+  <p style="font-size:14px">Unlocked for ${esc(state.pro.email)}. It is re-checked in the background when you are online.</p>
+  <div class="two"><button class="btn" data-act="reproof">Check again</button><button class="btn" data-act="lock">Remove from this phone</button></div></section>`;
+}
 function privacyCard() {
   return `<section class="card"><div class="kicker">Your data</div><h3 style="margin:6px 0">It never leaves this phone.</h3>
   <p style="font-size:14px">There is no account and no server. Everything you log is stored on your device, and this page is set up so it cannot send data anywhere else. Payments are handled by Paystack on their own page, and ShiftSmart never sees your card details. ShiftSmart is an independent tool and is not made by or affiliated with Bolt, Uber or inDrive.</p></section>`;
@@ -250,6 +281,7 @@ function entryRow(e) {
 }
 
 function viewHeat() {
+  if (!isPro() && !state.sample) return lockCard('Heatmap');
   const es = activeEntries(), P = pick(es);
   if (!es.length) return emptyState('Your heatmap is empty', 'Log a shift or two and the grid fills in. You can also look at sample data to see how it works.');
   const areas = [...new Set(P.list.map((e) => e.area || 'Unspecified'))].sort();
@@ -288,6 +320,7 @@ function emptyState(h, p) {
   <button class="btn ghost" data-act="sample" style="justify-self:center">Look at sample data</button></section>`;
 }
 function viewPlan() {
+  if (!isPro() && !state.sample) return lockCard('Plan');
   const es = activeEntries(), P = pick(es);
   if (!es.length) return emptyState('Nothing to plan yet', 'Once you have a few shifts logged, this tab shows your best and worst slots and what changing them is worth.');
   const B = buckets(P.list, ''), gold = runs(B, (r, a) => r >= a * 1.25).sort((a, b) => b.rate - a.rate).slice(0, 3),
@@ -327,7 +360,7 @@ function viewData() {
     <label class="btn block" for="jsonfile">Restore from backup</label><input type="file" id="jsonfile" accept=".json,application/json" class="sr">
     <button class="btn red block" data-act="wipe">Delete all my data</button>
     <p class="hint">Browsers can clear site data when storage runs low. Make a backup file now and then.</p></section>
-  ${payCard()}
+  ${isPro() ? proCard() : payCard() + unlockCard()}
   ${privacyCard()}`;
 }
 
@@ -483,6 +516,19 @@ document.addEventListener('click', (ev) => {
     addEntry({ id: uid(), start: r.start, min, earn, area: val('f-area').trim(), trips: val('f-trips') ? +val('f-trips') : undefined, kind: 'shift', src: 'timer' });
     state.data.running = null; save(); closeSheet(); toast('Shift saved'); render(); return;
   }
+  if (a === 'unlock') {
+    const email = val('proemail').trim().toLowerCase(), err = $('#proerr');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { err.textContent = 'Enter a valid email address.'; return; }
+    state.proBusy = true; render();
+    checkPro(email).then((ok) => {
+      state.proBusy = false;
+      if (ok) { state.pro = { email, at: Date.now() }; savePro(state.pro); toast('Unlocked. Thanks for subscribing!'); render(); }
+      else { render(); const e = $('#proerr'); if (e) e.textContent = 'No active subscription found for that email. Use the exact email you entered on Paystack, or subscribe first.'; const i = $('#proemail'); if (i) i.value = email; }
+    }).catch((x) => { state.proBusy = false; render(); const e = $('#proerr'); if (e) e.textContent = x.message === 'bad_email' ? 'That email does not look right.' : 'Could not check right now. Check your connection and try again.'; const i = $('#proemail'); if (i) i.value = email; });
+    return;
+  }
+  if (a === 'reproof') { refreshPro(true); return; }
+  if (a === 'lock') { if (confirm('Remove Pro from this phone? Your shift data is not affected. You can unlock again with your email.')) { state.pro = null; savePro(null); render(); } return; }
   if (a === 'addpast') return addPast();
   if (a === 'pastsave') {
     const date = val('f-date'), s = val('f-s'), e = val('f-e'), earn = num(val('f-earn'));
@@ -517,5 +563,15 @@ setInterval(() => { const c = $('#clock'); if (c && state.data.running) c.textCo
 
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(() => {});
 fetch('media/stories.json').then((r) => (r.ok ? r.json() : [])).then((j) => { state.media = Array.isArray(j) ? j : []; if (state.media.length) render(); }).catch(() => {});
+function refreshPro(manual) {
+  const p = state.pro; if (!p || !navigator.onLine) { if (manual) toast('You are offline'); return; }
+  if (!manual && Date.now() - p.at < PRO_RECHECK) return;
+  checkPro(p.email).then((ok) => {
+    if (ok) { state.pro = { email: p.email, at: Date.now() }; savePro(state.pro); if (manual) toast('Subscription is active'); }
+    else { state.pro = null; savePro(null); toast('Your subscription is no longer active'); }
+    render();
+  }).catch(() => { if (manual) toast('Could not check right now'); });
+}
+refreshPro(false);
 render();
 })();

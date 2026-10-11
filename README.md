@@ -16,7 +16,15 @@ ShiftSmart is an independent tool. It is not made by, or affiliated with, Bolt, 
 
 ## Privacy
 
-Data lives in the browser's `localStorage`. The site ships a Content-Security-Policy (`public/_headers`) that restricts it to its own origin, and the code makes no network calls. Browsers can clear site data when storage runs low, so the app offers a backup file. The only outbound link is the subscribe button, which opens a hosted Paystack page in a new tab; the app itself never handles payment details.
+Data lives in the browser's `localStorage`. The site ships a Content-Security-Policy (`public/_headers`) that restricts it to its own origin, and the code makes no network calls. Browsers can clear site data when storage runs low, so the app offers a backup file. Shift data is never uploaded. The only network call is `POST /api/verify`, which sends the subscriber's email so the Worker can ask Paystack whether the subscription is active. Payment happens on a hosted Paystack page; the app never handles card details.
+
+## Subscriptions (ShiftSmart Pro)
+
+Logging, the timer, CSV import and backups are free. The Heatmap and Plan tabs need an active R49/month Paystack subscription (sample data is always viewable). `src/worker.js` serves the static app and `POST /api/verify`, which looks the email up with Paystack's `GET /customer/:email` and checks for an `active` subscription (or a `non-renewing` one that is still paid up). The phone stores the email and re-checks about daily when online, with a 14-day offline grace period.
+
+Setup: in Cloudflare, Workers & Pages > shiftsmart > Settings > Variables and Secrets, add a **secret** named `PAYSTACK_SECRET_KEY` with your Paystack secret key (Settings > API Keys & Webhooks). Never commit it.
+
+Limitation: the app is client-side, so the lock is a soft paywall. It stops casual use but a technical user can bypass it in browser dev tools, and anyone who knows a subscriber's email can unlock with it.
 
 ## Stack
 

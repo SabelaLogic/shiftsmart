@@ -89,7 +89,7 @@ main{padding-top:10px;display:grid;gap:16px}
 .chip{min-height:36px;padding:0 14px;border-radius:99px;border:1px solid var(--line2);font-size:13px;font-weight:500;color:var(--muted)}
 .chip[aria-pressed="true"]{background:var(--text);color:var(--bg);border-color:var(--text)}
 select{appearance:none;background:var(--surface2) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8'><path d='M1 1l5 5 5-5' fill='none' stroke='%239AA7B2' stroke-width='1.6'/></svg>") no-repeat right 14px center;border:1px solid var(--line2);border-radius:12px;padding:0 36px 0 14px;min-height:44px;width:100%}
-input[type=text],input[type=number],input[type=datetime-local],input[type=date],input[type=time]{background:var(--surface2);border:1px solid var(--line2);border-radius:12px;padding:0 14px;min-height:46px;width:100%}
+input[type=text],input[type=email],input[type=number],input[type=datetime-local],input[type=date],input[type=time]{background:var(--surface2);border:1px solid var(--line2);border-radius:12px;padding:0 14px;min-height:46px;width:100%}
 label.f{display:grid;gap:6px;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--faint)}
 label.f input,label.f select{text-transform:none;letter-spacing:0;font-weight:400;font-size:15px;color:var(--text)}
 input:focus,select:focus,button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
