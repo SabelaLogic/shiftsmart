@@ -216,6 +216,7 @@ function viewToday() {
       <div class="step"><b>1</b><div><h3>Tap start when you go online</h3><p>Tap stop when you finish and type what you earned. That includes the waiting time, which is where dead hours hide.</p></div></div>
       <div class="step"><b>2</b><div><h3>Do it for a week or two</h3><p>Each shift is spread across the hours you worked, so the heatmap fills in as you go.</p></div></div>
       <div class="step"><b>3</b><div><h3>See what to change</h3><p>The Plan tab shows your best and worst slots and what moving hours could add.</p></div></div></div></section>
+      ${payCard()}
       ${privacyCard()}`;
   }
   const t = weekSum(es, 0), p = weekSum(es, -1);
@@ -232,9 +233,15 @@ function viewToday() {
     <div class="list">${recent.map(entryRow).join('')}</div></section>`;
 }
 function clockText(run) { const s = Math.max(0, Math.floor((Date.now() - run.start) / 1000)); return `${pad(Math.floor(s / 3600))}:${pad(Math.floor(s / 60) % 60)}:${pad(s % 60)}`; }
+const PAY_URL = 'https://paystack.shop/pay/a1im2f8vq6';
+function payCard() {
+  return `<section class="card stack"><div class="kicker">Support ShiftSmart</div><h3>R49 a month</h3>
+  <p style="font-size:14px">Subscribe to keep ShiftSmart growing. Payment opens on Paystack in a new tab, so your card details never touch this app.</p>
+  <a class="btn gold block" href="${PAY_URL}" target="_blank" rel="noopener noreferrer">Subscribe on Paystack</a></section>`;
+}
 function privacyCard() {
   return `<section class="card"><div class="kicker">Your data</div><h3 style="margin:6px 0">It never leaves this phone.</h3>
-  <p style="font-size:14px">There is no account and no server. Everything you log is stored on your device, and this page is set up so it cannot send data anywhere else. ShiftSmart is an independent tool and is not made by or affiliated with Bolt, Uber or inDrive.</p></section>`;
+  <p style="font-size:14px">There is no account and no server. Everything you log is stored on your device, and this page is set up so it cannot send data anywhere else. Payments are handled by Paystack on their own page, and ShiftSmart never sees your card details. ShiftSmart is an independent tool and is not made by or affiliated with Bolt, Uber or inDrive.</p></section>`;
 }
 function entryRow(e) {
   return `<div class="entry"><div><div class="t">${dayName(e.start)} ${new Date(e.start).getDate()} ${new Date(e.start).toLocaleString('en-ZA', { month: 'short' })} · ${hhmm(e.start)} · ${dur(e.min)}</div>
@@ -320,6 +327,7 @@ function viewData() {
     <label class="btn block" for="jsonfile">Restore from backup</label><input type="file" id="jsonfile" accept=".json,application/json" class="sr">
     <button class="btn red block" data-act="wipe">Delete all my data</button>
     <p class="hint">Browsers can clear site data when storage runs low. Make a backup file now and then.</p></section>
+  ${payCard()}
   ${privacyCard()}`;
 }
 

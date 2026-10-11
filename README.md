@@ -2,7 +2,7 @@
 
 Find your dead hours. Drive the gold ones.
 
-A free, private, offline-first web app for e-hailing drivers. Time your shifts, log what you earned, and see which hours and areas actually pay you. No account, no server, no tracking: everything is stored on the phone.
+A private, offline-first web app for e-hailing drivers. Time your shifts, log what you earned, and see which hours and areas actually pay you. No account, no server, no tracking: everything is stored on the phone.
 
 ShiftSmart is an independent tool. It is not made by, or affiliated with, Bolt, Uber or inDrive.
 
@@ -16,7 +16,7 @@ ShiftSmart is an independent tool. It is not made by, or affiliated with, Bolt, 
 
 ## Privacy
 
-Data lives in the browser's `localStorage`. The site ships a Content-Security-Policy (`public/_headers`) that restricts it to its own origin, and the code makes no network calls. Browsers can clear site data when storage runs low, so the app offers a backup file.
+Data lives in the browser's `localStorage`. The site ships a Content-Security-Policy (`public/_headers`) that restricts it to its own origin, and the code makes no network calls. Browsers can clear site data when storage runs low, so the app offers a backup file. The only outbound link is the subscribe button, which opens a hosted Paystack page in a new tab; the app itself never handles payment details.
 
 ## Stack
 

@@ -47,6 +47,7 @@ main{padding-top:10px;display:grid;gap:16px}
 .warn{font-size:13px;color:var(--gold)}
 
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 20px;border-radius:99px;font-weight:600;background:var(--surface2);border:1px solid var(--line2);transition:transform .12s,background .12s}
+.btn{text-decoration:none}
 .btn:active{transform:scale(.97)}
 .btn.gold{background:var(--gold);color:var(--gold-ink);border-color:var(--gold)}
 .btn.red{background:rgba(239,91,95,.14);color:var(--red);border-color:rgba(239,91,95,.45)}
