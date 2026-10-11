@@ -40,18 +40,17 @@ npx wrangler deploy
 
 Or connect this repo under Workers & Pages → Create → Import a repository, and every push to `main` deploys. When you ship a change, bump `V` in `public/sw.js` so installed copies refresh.
 
-## Adding real driver stories
+## People reel
 
-The "From the road" section on the Today screen stays hidden until `public/media/stories.json` has entries:
+The Today screen shows a swipeable reel of short looping clips (muted, tap to pause). Clips are listed in `public/media/stories.json`, each as MP4 plus a same-named WebM and a poster image:
 
 ```json
 [
-  { "type": "video", "src": "media/rank-clip.mp4", "caption": "What a Friday looks like", "credit": "Thabo, Sandton" },
-  { "type": "image", "src": "media/photo.webp", "alt": "Driver at the taxi rank", "caption": "Short caption" }
+  { "type": "video", "src": "media/family.mp4", "poster": "media/family.jpg", "caption": "What the hours are for" }
 ]
 ```
 
-Only add photos and clips of real drivers who have agreed to appear.
+Each card shows a small "AI-generated" tag by default. Set `"label": ""` on a card to hide it, or `"label": "Filmed at Bree rank"` to replace it, for example when you add footage of real drivers who agreed to appear.
 
 ## Status
 

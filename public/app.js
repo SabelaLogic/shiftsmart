@@ -211,6 +211,7 @@ function viewToday() {
       <div class="actions"><button class="btn gold block start" data-act="start">Start a shift</button>
       <button class="btn block" data-act="addpast">Add a past shift</button>
       <button class="btn ghost block" data-act="sample">Look at sample data first</button></div></section>
+      ${mediaHTML()}
       <section class="card stack"><div class="kicker">How it works</div><div class="steps">
       <div class="step"><b>1</b><div><h3>Tap start when you go online</h3><p>Tap stop when you finish and type what you earned. That includes the waiting time, which is where dead hours hide.</p></div></div>
       <div class="step"><b>2</b><div><h3>Do it for a week or two</h3><p>Each shift is spread across the hours you worked, so the heatmap fills in as you go.</p></div></div>
@@ -324,16 +325,23 @@ function viewData() {
 
 function mediaHTML() {
   if (!state.media.length) return '';
-  return '<section class="card media"><div class="kicker">From the road</div>' + state.media.slice(0, 6).map((m) => {
-    const src = esc(m.src || ''), cap = m.caption ? `<p style="font-size:14px;margin-top:8px">${esc(m.caption)}${m.credit ? ` <span class="hint">· ${esc(m.credit)}</span>` : ''}</p>` : '';
-    return '<figure>' + (m.type === 'video' ? `<video src="${src}" controls playsinline preload="metadata"></video>` : `<img src="${src}" alt="${esc(m.alt || m.caption || '')}" loading="lazy">`) + cap + '</figure>';
-  }).join('') + '</section>';
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  return '<section class="reel-wrap" aria-label="Drivers"><div class="reel">' + state.media.slice(0, 8).map((m) => {
+    const src = esc(m.src || ''), poster = m.poster ? ` poster="${esc(m.poster)}"` : '';
+    const label = m.label === undefined ? 'AI-generated' : m.label;
+    const tag = label ? `<span class="tag">${esc(label)}</span>` : '';
+    const cap = m.caption ? `<figcaption>${esc(m.caption)}${m.credit ? `<small>${esc(m.credit)}</small>` : ''}</figcaption>` : '';
+    const el = m.type === 'video'
+      ? `<video${poster} muted loop playsinline preload="metadata"${reduce ? '' : ' autoplay'}><source src="${src.replace(/\.mp4$/, '.webm')}" type="video/webm"><source src="${src}" type="video/mp4"></video>`
+      : `<img src="${src}" alt="${esc(m.alt || m.caption || '')}" loading="lazy">`;
+    return `<figure class="reelcard">${el}${tag}${cap}</figure>`;
+  }).join('') + '</div></section>';
 }
 
 /* ---------- render ---------- */
 function render() {
   const v = $('#view');
-  v.innerHTML = ({ today: viewToday, heat: viewHeat, plan: viewPlan, data: viewData }[state.tab] || viewToday)() + (state.tab === 'today' && !isRunning() ? mediaHTML() : '');
+  v.innerHTML = ({ today: viewToday, heat: viewHeat, plan: viewPlan, data: viewData }[state.tab] || viewToday)() + (state.tab === 'today' && !isRunning() && activeEntries().length ? mediaHTML() : '');
   for (const b of document.querySelectorAll('#tabbar button')) b.setAttribute('aria-current', b.dataset.tab === state.tab ? 'page' : 'false');
   $('#banner').innerHTML = state.sample ? '<div class="sample-banner"><span>SAMPLE DATA. Invented for demonstration, not real drivers.</span><button data-act="exitsample">Exit</button></div>' : '';
   const pill = $('#datapill'); pill.textContent = state.sample ? 'Sample' : 'Private · offline'; pill.classList.toggle('sample', state.sample);
@@ -494,6 +502,7 @@ document.addEventListener('change', (ev) => {
   else if (imp && t.dataset.map) { imp.map[t.dataset.map] = +t.value; previewImport(); }
   else if (imp && t.dataset.opt) { imp[t.dataset.opt] = t.value; previewImport(); }
 });
+document.addEventListener('click', (ev) => { const v = ev.target.closest('.reelcard'); const vid = v && v.querySelector('video'); if (vid) { vid.paused ? vid.play() : vid.pause(); } });
 $('#tabbar').addEventListener('click', (ev) => { const b = ev.target.closest('button[data-tab]'); if (b) go(b.dataset.tab); });
 $('#sheet').addEventListener('click', (ev) => { if (ev.target.id === 'sheet') closeSheet(); });
 setInterval(() => { const c = $('#clock'); if (c && state.data.running) c.textContent = clockText(state.data.running); }, 1000);

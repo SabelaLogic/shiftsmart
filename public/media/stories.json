@@ -1,1 +1,20 @@
-[]
+[
+  {
+    "type": "video",
+    "src": "media/family.mp4",
+    "poster": "media/family.jpg",
+    "caption": "What the hours are for"
+  },
+  {
+    "type": "video",
+    "src": "media/night-driver.mp4",
+    "poster": "media/night-driver.jpg",
+    "caption": "Between rides"
+  },
+  {
+    "type": "video",
+    "src": "media/long-shift.mp4",
+    "poster": "media/long-shift.jpg",
+    "caption": "The long shift"
+  }
+]
